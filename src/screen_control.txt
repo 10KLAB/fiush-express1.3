@@ -1,0 +1,61 @@
+#include <Adafruit_GFX.h>
+#include <Adafruit_SH110X.h>
+#include <Arduino.h>
+#include <SPI.h>
+#include <Wire.h>
+
+#include "global.h"
+
+#define i2c_Address 0x3C
+#define SCREEN_WIDTH 128
+#define SCREEN_HEIGHT 64
+#define OLED_RESET -1
+Adafruit_SH1106G display = Adafruit_SH1106G(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
+String variable_name = "holit01";
+namespace _10klab {
+namespace screen {
+void SetUpScreen() {
+  display.begin(i2c_Address, true);
+  display.setTextWrap(false);
+  display.setTextColor(SH110X_WHITE);
+  display.clearDisplay();
+}
+
+void ScrollText(){
+    static int display_width = display.width();
+    static int display_line = 25;
+    static int speed = 3;
+    int min_x = -20 * _10klab::global::coctel_name.length();
+
+    display.setTextSize(3);
+    display.clearDisplay();
+    display.setCursor(display_width, display_line);
+    display.print(_10klab::global::coctel_name);
+    display.display();
+    display_width = display_width-speed;
+
+    if(display_width < min_x){
+        display_width = display.width();
+    }
+}
+
+void StaticTextScreen() {
+    String text_to_show = "FIUSH 1.3";
+    static int display_line = 25;
+
+    display.clearDisplay();
+    display.setTextSize(2);
+    int center_text = (display.width() / 2) - ((12 * text_to_show.length()) / 2);
+    display.setCursor(center_text, display_line);
+    display.println(text_to_show);
+    display.display();
+}
+
+void ControlScreen(){
+    if(_10klab::global::screen_mode){
+        ScrollText();
+    }
+}
+
+} // namespace screen
+} // namespace _10klab
